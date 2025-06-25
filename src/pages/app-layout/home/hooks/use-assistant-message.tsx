@@ -8,7 +8,6 @@ import {
   DownloadIcon,
   InfoIcon,
   LightbulbIcon,
-  PlusIcon,
   ShareIcon,
   SunMediumIcon,
   SunriseIcon,
@@ -55,8 +54,6 @@ import { BookingIcon } from '@/components/custom/icons/booking-icon';
 import { SkyscannerIcon } from '@/components/custom/icons/skyscanner-icon';
 import { useAllFlightsDrawer } from './use-all-flights-drawer';
 import { useAllAccomodationDrawer } from './use-all-accomodation-drawer';
-import { TextAnimate } from "@/components/magicui/text-animate";
-import { BlurFade } from "@/components/magicui/blur-fade";
 
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';

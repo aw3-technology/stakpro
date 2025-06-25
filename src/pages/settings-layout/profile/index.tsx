@@ -1,7 +1,5 @@
 import { ContentHeader } from '@/components/custom/content-header';
 import { Divider } from '@/components/custom/divider';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { UserRoundIcon } from 'lucide-react';
 import { ProfileForm } from './components/profile-form';
 import { Button } from '@/components/ui/button';
 import { ChangePasswordModal } from './components/change-password-modal';
