@@ -185,7 +185,7 @@ export const AffiliateProgram = () => {
                     id={inviteLinkId}
                     className="pe-9"
                     type="text"
-                    defaultValue="https://travelplanner.io/ref/944122"
+                    defaultValue="https://ai-travel-planner-smoky.vercel.app/refer/87689"
                     readOnly
                   />
                   <Tooltip>

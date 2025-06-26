@@ -109,7 +109,7 @@ export const InviteModal = () => {
               id={id}
               className="pe-9"
               type="text"
-              defaultValue="https://travel-planner.com/refer/87689"
+              defaultValue="https://ai-travel-planner-smoky.vercel.app/refer/87689"
               readOnly
             />
             <TooltipProvider delayDuration={0}>
