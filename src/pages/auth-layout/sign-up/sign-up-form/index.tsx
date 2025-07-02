@@ -15,35 +15,69 @@ import AppleLogoSVG from '/images/apple-logo.svg?inline';
 import GoogleLogoSVG from '/images/google-logo.svg?inline';
 import { useNavigate, Link } from 'react-router';
 import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const signUpSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  fullName: z.string().min(2, 'Full name must be at least 2 characters').optional(),
 });
 
 export const SignUpForm = () => {
   const navigate = useNavigate();
-   const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { signUp } = useAuth();
 
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       email: '',
       password: '',
+      fullName: '',
     },
   });
 
-  function onSubmit(values: z.infer<typeof signUpSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
-    navigate('/');
+  async function onSubmit(values: z.infer<typeof signUpSchema>) {
+    setIsLoading(true);
+    
+    try {
+      const { error } = await signUp(values.email, values.password, values.fullName);
+      
+      if (error) {
+        alert(`Signup Failed: ${error.message}`);
+      } else {
+        alert("Account Created Successfully! Please check your email to verify your account.");
+        navigate('/login');
+      }
+    } catch (error) {
+      alert("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="fullName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Name</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Enter your full name"
+                  {...field}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="email"
@@ -52,9 +86,10 @@ export const SignUpForm = () => {
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="enter your email address eg. test@test.com"
+                  placeholder="Enter your email address"
                   type="email"
                   {...field}
+                  disabled={isLoading}
                 />
               </FormControl>
               <FormMessage />
@@ -70,9 +105,10 @@ export const SignUpForm = () => {
               <FormControl>
                <div className="relative">
                   <Input
-                    placeholder="enter your password eg. Password"
+                    placeholder="Enter your password (min. 8 characters)"
                     type={showPassword ? "text" : "password"}
                     {...field}
+                    disabled={isLoading}
                   />
                   <Button
                     type="button"
@@ -80,6 +116,7 @@ export const SignUpForm = () => {
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -93,8 +130,15 @@ export const SignUpForm = () => {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full cursor-pointer">
-          Create Account
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating Account...
+            </>
+          ) : (
+            'Create Account'
+          )}
         </Button>
       </form>
       <div className="relative">

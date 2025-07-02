@@ -17,30 +17,44 @@ import AppleLogoSVG from '/images/apple-logo.svg?inline';
 import GoogleLogoSVG from '/images/google-logo.svg?inline';
 import { useNavigate, Link } from 'react-router';
 import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
 export const LoginForm = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuth();
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'email@example.ai',
-      password: '?2j!@#$%^&*()',
+      email: '',
+      password: '',
     },
   });
 
-  function onSubmit(values: z.infer<typeof loginSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    if (values.email !== '' && values.password !== '') {
-      navigate('/');
+  async function onSubmit(values: z.infer<typeof loginSchema>) {
+    setIsLoading(true);
+    
+    try {
+      const { error } = await signIn(values.email, values.password);
+      
+      if (error) {
+        alert(`Login Failed: ${error.message}`);
+      } else {
+        alert("Login Successful! Welcome back.");
+        navigate('/');
+      }
+    } catch (error) {
+      alert("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -55,9 +69,10 @@ export const LoginForm = () => {
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="enter your email address eg. test@test.com"
+                  placeholder="Enter your email address"
                   type="email"
                   {...field}
+                  disabled={isLoading}
                 />
               </FormControl>
               <FormMessage />
@@ -73,9 +88,10 @@ export const LoginForm = () => {
               <FormControl>
                 <div className="relative">
                   <Input
-                    placeholder="enter your password eg. Password"
+                    placeholder="Enter your password"
                     type={showPassword ? "text" : "password"}
                     {...field}
+                    disabled={isLoading}
                   />
                   <Button
                     type="button"
@@ -83,11 +99,12 @@ export const LoginForm = () => {
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-4 w-4 text-muted-foreground" />
                     )}
                   </Button>
                 </div>
@@ -113,8 +130,15 @@ export const LoginForm = () => {
             Forgot password?
           </Link>
         </div>
-        <Button type="submit" className="w-full">
-          Sign In
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Signing In...
+            </>
+          ) : (
+            'Sign In'
+          )}
         </Button>
       </form>
 

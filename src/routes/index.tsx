@@ -8,8 +8,11 @@ import { Route, Routes as ReactRoutes, Outlet } from 'react-router';
 import { Home } from '@/pages/app-layout/home';
 import { ChatProvider } from '@/providers/chat-provider';
 import { Explore } from '@/pages/app-layout/explore';
-import { MyTrips } from '@/pages/app-layout/my-trips';
+import { MyTools } from '@/pages/app-layout/my-tools';
 import { Saved } from '@/pages/app-layout/saved';
+import { AddTool } from '@/pages/app-layout/add-tool';
+import { Admin } from '@/pages/app-layout/admin';
+import DiscoveryAdminPage from '@/pages/admin/discovery';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Profile } from '@/pages/settings-layout/profile';
 import { Preferences } from '@/pages/settings-layout/preferences';
@@ -52,8 +55,11 @@ export const Routes = () => {
       >
         <Route path="/" element={<Home />} />
         <Route path="/explore" element={<Explore />} />
-        <Route path="/my-trips" element={<MyTrips />} />
+        <Route path="/my-tools" element={<MyTools />} />
         <Route path="/saved" element={<Saved />} />
+        <Route path="/add-tool" element={<AddTool />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/discovery" element={<DiscoveryAdminPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route

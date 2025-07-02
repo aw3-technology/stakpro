@@ -15,20 +15,7 @@ export const StackImages = ({
 
   return (
     <div className={cn('relative w-42 h-32 rounded-2xl shadow-md select-none')}>
-      <div className="absolute w-full h-full border-2 shadow-xl shadow-shadow-24 border-foreground-light-solid rounded-2xl overflow-hidden transform -rotate-6 z-20 opacity-50">
-        <img
-          src="/images/barcelona-beach.jpg"
-          alt="Barcelona Beach"
-          className="w-full h-full object-cover"
-        />
-      </div>
-      <div className="absolute w-full h-full border-2 shadow-2xl border-foreground-light-solid rounded-2xl overflow-hidden transform -rotate-3 z-30 opacity-70">
-        <img
-          src="/images/barcelona-fountain.jpg"
-          alt="Barcelona Fountain"
-          className="w-full h-full object-cover"
-        />
-      </div>
+      {/* Removed stacked background images - showing only the main tool logo */}
       <div className="absolute w-full h-full border-2 shadow-2xl border-foreground-light-solid rounded-2xl overflow-hidden transform z-40">
         <img
           src={coverImageUrl}

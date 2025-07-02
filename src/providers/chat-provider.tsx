@@ -15,7 +15,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ChatContext.Provider value={{ messages, addMessage, clearMessages }}>
+    <ChatContext.Provider value={{ messages, addMessage, setMessages, clearMessages }}>
       {children}
     </ChatContext.Provider>
   );

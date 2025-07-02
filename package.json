@@ -1,13 +1,19 @@
 {
-  "name": "pixipro-travel-planner-react-typescript",
+  "name": "stakpro-software-tool-discovery",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:stats": "node scripts/sql-utils.js stats",
+    "db:backup": "node scripts/sql-utils.js backup",
+    "db:duplicates": "node scripts/sql-utils.js duplicates",
+    "db:pending": "node scripts/sql-utils.js pending",
+    "storage:setup": "node scripts/setup-storage.js",
+    "test:explore": "node scripts/test-explore-integration.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -24,6 +30,7 @@
     "@radix-ui/react-switch": "^1.2.2",
     "@radix-ui/react-tabs": "^1.1.10",
     "@radix-ui/react-tooltip": "^1.2.4",
+    "@supabase/supabase-js": "^2.50.2",
     "@tailwindcss/vite": "^4.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -32,6 +39,7 @@
     "lucide-react": "^0.503.0",
     "marked": "^15.0.8",
     "motion": "^12.12.1",
+    "pg": "^8.16.3",
     "radix-ui": "^1.4.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

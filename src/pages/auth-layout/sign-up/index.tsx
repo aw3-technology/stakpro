@@ -13,7 +13,7 @@ export const SignUp = () => {
               <div className="flex flex-col gap-2">
                 <h1>Create an account</h1>
                 <span className="text-sm text-muted-foreground">
-                  Welcome to Travel Planner. Let’s create your account.
+                  Welcome to StakPro. Let’s create your account.
                 </span>
               </div>
             </header>

@@ -1,13 +1,13 @@
 import {
   ArrowUp,
-  BabyIcon,
-  BikeIcon,
+  Code,
+  Database,
   LightbulbIcon,
   Loader,
   Plus,
   SparklesIcon,
-  TicketsPlane,
-  WineIcon,
+  Settings,
+  Smartphone,
   X,
 } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -30,14 +30,14 @@ export const PromptInputArea = ({
 }: PromptInputAreaProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const [input, setInput] = useState("Plan a 6-day adventure trip to Barcelona for 3 friends in October. Include hiking in Montserrat, a bike tour of the city, and a day for exploring Gothic Quarter. Budget-friendly options preferred.");
+  const [input, setInput] = useState("Find the best tools for a React TypeScript project with Node.js backend. Include code editor, database, testing framework, and deployment tools. Budget-friendly options preferred.");
   const [files, setFiles] = useState<File[]>([]);
   const uploadInputRef = useRef<HTMLInputElement>(null);
 
   const suggestionPrompts = [
     {
-      icon: <TicketsPlane className="text-green-600 size-4" />,
-      value: 'Create a new trip',
+      icon: <Code className="text-green-600 size-4" />,
+      value: 'Frontend stack',
     },
     {
       icon: <LightbulbIcon className="text-cyan-600 size-4" />,
@@ -45,19 +45,19 @@ export const PromptInputArea = ({
     },
     {
       icon: <SparklesIcon className="text-indigo-600 size-4" />,
-      value: 'Inspire me where to go',
+      value: 'Discover new tools',
     },
     {
-      icon: <BikeIcon className="text-yellow-600 size-4" />,
-      value: 'Solo trip',
+      icon: <Database className="text-yellow-600 size-4" />,
+      value: 'Backend tools',
     },
     {
-      icon: <WineIcon className="text-pink-600 size-4" />,
-      value: 'Partner',
+      icon: <Smartphone className="text-pink-600 size-4" />,
+      value: 'Mobile dev',
     },
     {
-      icon: <BabyIcon className="text-pink-500 size-4" />,
-      value: 'Family',
+      icon: <Settings className="text-pink-500 size-4" />,
+      value: 'DevOps',
     },
   ];
 
@@ -105,7 +105,7 @@ export const PromptInputArea = ({
               backgroundColor: 'transparent',
             }}
             className="flex field-sizing-content max-h-[80px] md:max-h-[200px] w-full rounded-xl px-4 py-3 leading-relaxed text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none [resize:none] shadow-none border-none focus-visible:ring-0"
-            placeholder="Ask me anything about your trip.."
+            placeholder="Ask me anything about your project tools.."
             aria-label="Enter your prompt"
           />
           <div className="flex items-center justify-between gap-2 py-2 px-3 bg-transparent transition-colors">
