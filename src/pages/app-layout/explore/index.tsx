@@ -4,7 +4,6 @@ import { InformationHeader } from '@/components/custom/information-header';
 import { ToolComparison } from '@/components/custom/tool-comparison';
 import { CategoryOverview } from '@/components/custom/category-overview';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -13,17 +12,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ChevronRightIcon, SearchIcon, Loader2, AlertCircle, Scale, X } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AISearchBar } from '@/components/ai-platform/ai-search-bar';
+import { SearchQuery } from '@/types/ai-platform';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router';
 import { getApprovedTools, getToolsByCategory, searchTools, getAvailableCategories } from '@/lib/tool-api';
 import { SoftwareToolModel } from '@/temp-data/software-tool-data';
 import { perplexity } from '@/lib/perplexity';
+import { aiSearchEngine } from '@/lib/ai-search';
 
 export const Explore = () => {
   const [allTools, setAllTools] = useState<(SoftwareToolModel & { id: number })[]>([]);
   const [displayTools, setDisplayTools] = useState<(SoftwareToolModel & { id: number })[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searching, setSearching] = useState(false);
+  const [_searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -102,6 +105,52 @@ export const Explore = () => {
 
     loadData();
   }, []);
+
+  // AI-powered search handler with NLP
+  const handleAISearch = useCallback(async (searchQuery: SearchQuery) => {
+    try {
+      setSearching(true);
+      setSearchQuery(searchQuery.text);
+      setOnlineSearchResults(null);
+      
+      // Use enhanced NLP search
+      const nlpResult = await aiSearchEngine.searchWithNLP(
+        searchQuery.text,
+        searchQuery.context,
+        allTools
+      );
+      
+      // Convert enhanced tools back to software tool models for display
+      const toolResults = nlpResult.tools.map(enhancedTool => {
+        const originalTool = allTools.find(tool => tool.id.toString() === enhancedTool.id);
+        return originalTool;
+      }).filter(Boolean) as (SoftwareToolModel & { id: number })[];
+      
+      // Apply AI-extracted filters
+      if (searchQuery.filters.categories.length > 0) {
+        setSelectedCategory(searchQuery.filters.categories[0]);
+      }
+      if (searchQuery.filters.pricing_models.length > 0) {
+        setSelectedPricing(searchQuery.filters.pricing_models[0]);
+      }
+      
+      // Set the NLP search results
+      setDisplayTools(toolResults);
+      
+      // Show search explanation as info
+      if (nlpResult.explanation) {
+        console.log('Search explanation:', nlpResult.explanation);
+      }
+      
+    } catch (error) {
+      console.error('AI search error:', error);
+      setError('AI search failed. Please try again.');
+      // Fallback to regular search
+      await performSearch(searchQuery.text);
+    } finally {
+      setSearching(false);
+    }
+  }, [allTools]);
 
   // Enhanced search function with AI query enhancement
   const performSearch = useCallback(async (query: string) => {
@@ -245,24 +294,6 @@ export const Explore = () => {
     setDisplayTools(filtered);
   }, []);
 
-  // Handle search input change with debouncing
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-
-    // Clear online results when user starts new search
-    setOnlineSearchResults(null);
-
-    // Clear existing timeout
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    // Set new timeout for debounced search
-    searchTimeoutRef.current = setTimeout(() => {
-      performSearch(query);
-    }, 300); // 300ms debounce delay
-  }, [performSearch]);
 
   // Handle category change
   const handleCategoryChange = useCallback(async (category: string) => {
@@ -365,26 +396,18 @@ export const Explore = () => {
             </span>
           }
         />
-        <div className="flex flex-wrap gap-4">
-          <div className="*:not-first:mt-2 grow sm:grow-0 sm:basis-1/2">
-            <div className="relative">
-              <Input
-                className="peer ps-10 pe-4 w-full border border-input shadow-sm shadow-shadow-2"
-                placeholder="Search tools, categories, or features..."
-                type="search"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                disabled={loading}
-              />
-              <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
-                {searching ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <SearchIcon className="size-4" />
-                )}
-              </div>
-            </div>
+        <div className="space-y-4">
+          {/* AI-Powered Search */}
+          <div className="w-full">
+            <AISearchBar 
+              onSearch={handleAISearch}
+              placeholder="Describe what you're looking for... (e.g., 'project management tool that integrates with Slack')"
+              className="w-full"
+            />
           </div>
+          
+          {/* Traditional Filters */}
+          <div className="flex flex-wrap gap-4">
           <Select value={selectedCategory} onValueChange={handleCategoryChange} disabled={loading}>
             <SelectTrigger className="border border-input shadow-sm shadow-shadow-2 cursor-pointer">
               <SelectValue />
@@ -442,6 +465,7 @@ export const Explore = () => {
             <Scale className="h-4 w-4" />
             Compare Mode
           </Button>
+          </div>
         </div>
 
         {/* Comparison Bar */}
@@ -537,68 +561,65 @@ export const Explore = () => {
 
       {/* Error State */}
       {error && (
-        <div className="flex items-center justify-center py-12">
-          <AlertCircle className="h-8 w-8 text-red-500" />
-          <span className="ml-2 text-red-600">{error}</span>
-        </div>
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Online Search Results */}
       {!loading && !error && onlineSearchResults && (
         <div className="space-y-4">
-          <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <SearchIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              <span className="font-medium text-blue-900 dark:text-blue-100">
-                Found online tools for "{searchQuery}"
-              </span>
-            </div>
-            <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">
+          <Alert className="border-blue-200 dark:border-blue-800">
+            <SearchIcon className="h-4 w-4" />
+            <AlertTitle>Found online tools for "{searchQuery}"</AlertTitle>
+            <AlertDescription className="mt-2">
               {onlineSearchResults.summary}
-            </p>
-            <div className="space-y-3">
-              {onlineSearchResults.tools.map((tool, index) => (
-                <div key={index} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-foreground">{tool.name}</h3>
-                      <p className="text-sm text-foreground/70 mt-1">{tool.description}</p>
-                      <div className="flex items-center gap-4 mt-2 text-xs text-foreground/60">
-                        {tool.category && (
-                          <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                            {tool.category}
-                          </span>
-                        )}
-                        {tool.pricing && (
-                          <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded">
-                            {tool.pricing}
-                          </span>
-                        )}
-                      </div>
+            </AlertDescription>
+          </Alert>
+          <div className="space-y-3">
+            {onlineSearchResults.tools.map((tool, index) => (
+              <div key={index} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground">{tool.name}</h3>
+                    <p className="text-sm text-foreground/70 mt-1">{tool.description}</p>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-foreground/60">
+                      {tool.category && (
+                        <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                          {tool.category}
+                        </span>
+                      )}
+                      {tool.pricing && (
+                        <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                          {tool.pricing}
+                        </span>
+                      )}
                     </div>
-                    {tool.website && (
-                      <a
-                        href={tool.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:text-primary/80 text-sm font-medium ml-4"
-                      >
-                        Visit Website →
-                      </a>
-                    )}
                   </div>
+                  {tool.website && (
+                    <a
+                      href={tool.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:text-primary/80 text-sm font-medium ml-4"
+                    >
+                      Visit Website →
+                    </a>
+                  )}
                 </div>
-              ))}
-            </div>
-            <div className="mt-4 pt-3 border-t border-blue-200 dark:border-blue-800">
-              <p className="text-xs text-blue-600 dark:text-blue-400">
-                These tools were found by searching the web. Consider{' '}
-                <Link to="/add-tool" className="underline hover:no-underline">
-                  submitting them
-                </Link>{' '}
-                to our database to help other users discover them.
-              </p>
-            </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-3 border-t border-blue-200 dark:border-blue-800">
+            <p className="text-xs text-blue-600 dark:text-blue-400">
+              These tools were found by searching the web. Consider{' '}
+              <Link to="/add-tool" className="underline hover:no-underline">
+                submitting them
+              </Link>{' '}
+              to our database to help other users discover them.
+            </p>
           </div>
         </div>
       )}

@@ -6,7 +6,10 @@ import {
   Search,
   Plus,
   Folder,
+  Command,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { UserMenu } from '../auth/UserMenu';
 import { useFeedbackModal } from '@/pages/app-layout/feedback/hooks/use-feedback-modal-store';
 import { FeedbackModal } from '@/pages/app-layout/feedback/feedback-modal';
@@ -45,6 +48,30 @@ export const Navbar: React.FC = () => {
           >
             <Search className="w-5 h-5 text-blue-500" />
           </Link>
+
+          {/* Command Palette Trigger */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full p-3 hover:bg-card active:bg-card transition-colors"
+                onClick={() => {
+                  const event = new KeyboardEvent('keydown', {
+                    key: 'k',
+                    metaKey: true,
+                    bubbles: true
+                  });
+                  document.dispatchEvent(event);
+                }}
+              >
+                <Command className="w-5 h-5 text-purple-500" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Search (⌘K)</p>
+            </TooltipContent>
+          </Tooltip>
 
           {/* My Tools */}
           <Link

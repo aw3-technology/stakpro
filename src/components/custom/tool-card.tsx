@@ -10,6 +10,13 @@ import { Heart, Scale } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { LoginDialog } from '@/components/auth/LoginDialog';
+import { toast } from 'sonner';
+import { 
+  HoverCard, 
+  HoverCardContent, 
+  HoverCardTrigger 
+} from '@/components/ui/hover-card';
+import { Badge } from '@/components/ui/badge';
 
 interface ToolCardProps {
   tool: SoftwareToolModel & { id?: number };
@@ -116,16 +123,23 @@ export const ToolCard = ({
         if (result.success) {
           setIsSaved(false);
           onSaveChange?.(false);
+          toast.success('Tool removed from saved items');
+        } else {
+          toast.error('Failed to remove tool');
         }
       } else {
         const result = await saveToolForUser(tool.id);
         if (result.success) {
           setIsSaved(true);
           onSaveChange?.(true);
+          toast.success(`${tool.name} saved successfully!`);
+        } else {
+          toast.error('Failed to save tool');
         }
       }
     } catch (error) {
       console.error('Error toggling save status:', error);
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -149,10 +163,12 @@ export const ToolCard = ({
 
   return (
     <>
-      <div className={cn(
-        "flex flex-col items-center sm:flex-row justify-center sm:justify-start gap-3 py-6 px-0 sm:px-6 rounded-lg bg-card shadow-shadow-2 backdrop-blur-md hover:shadow-md transition-shadow cursor-pointer relative",
-        className
-      )}>
+      <HoverCard>
+        <HoverCardTrigger asChild>
+          <div className={cn(
+            "flex flex-col items-center sm:flex-row justify-center sm:justify-start gap-3 py-6 px-0 sm:px-6 rounded-lg bg-card shadow-shadow-2 backdrop-blur-md hover:shadow-md transition-shadow cursor-pointer relative",
+            className
+          )}>
         {/* Save Button - positioned absolutely */}
         <Button
           variant="ghost"
@@ -248,7 +264,76 @@ export const ToolCard = ({
             </span>
           </div>
         </div>
-      </div>
+          </div>
+        </HoverCardTrigger>
+        
+        <HoverCardContent className="w-80" side="top">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+                {tool.logo ? (
+                  <img 
+                    src={tool.logo} 
+                    alt={`${tool.name} logo`}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="text-lg font-semibold text-muted-foreground">
+                    {tool.name.charAt(0)}
+                  </span>
+                )}
+              </div>
+              <div>
+                <h4 className="font-semibold">{tool.name}</h4>
+                <p className="text-sm text-muted-foreground">{tool.category}</p>
+              </div>
+            </div>
+            
+            <p className="text-sm text-foreground/80 line-clamp-3">
+              {tool.description}
+            </p>
+            
+            <div className="flex flex-wrap gap-1">
+              {tool.tags.slice(0, 3).map((tag, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+              {tool.tags.length > 3 && (
+                <Badge variant="outline" className="text-xs">
+                  +{tool.tags.length - 3} more
+                </Badge>
+              )}
+            </div>
+            
+            <div className="flex items-center justify-between pt-2 border-t">
+              <div className="flex items-center gap-1">
+                <StarIcon className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                <span className="text-sm font-medium">{tool.rating}</span>
+                <span className="text-xs text-muted-foreground">
+                  ({formatReviews(tool.reviewCount)})
+                </span>
+              </div>
+              <div className="text-sm font-medium">
+                {getPricingText()}
+              </div>
+            </div>
+            
+            {tool.features.length > 0 && (
+              <div className="pt-2 border-t">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Key Features:</p>
+                <div className="flex flex-wrap gap-1">
+                  {tool.features.slice(0, 4).map((feature, index) => (
+                    <span key={index} className="text-xs bg-muted px-2 py-1 rounded">
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </HoverCardContent>
+      </HoverCard>
 
       {/* Login Dialog */}
       <LoginDialog

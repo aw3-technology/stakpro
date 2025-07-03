@@ -6,6 +6,7 @@ import { SignUp } from '@/pages/auth-layout/sign-up';
 import { PasswordReset } from '@/pages/auth-layout/password-reset';
 import { Route, Routes as ReactRoutes, Outlet } from 'react-router';
 import { Home } from '@/pages/app-layout/home';
+import { HomeAI } from '@/pages/app-layout/home-ai';
 import { ChatProvider } from '@/providers/chat-provider';
 import { Explore } from '@/pages/app-layout/explore';
 import { MyTools } from '@/pages/app-layout/my-tools';
@@ -53,7 +54,8 @@ export const Routes = () => {
           </AppLayout>
         }
       >
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<HomeAI />} />
+        <Route path="/chat" element={<Home />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/my-tools" element={<MyTools />} />
         <Route path="/saved" element={<Saved />} />

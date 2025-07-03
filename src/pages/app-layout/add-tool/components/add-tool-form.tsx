@@ -31,6 +31,7 @@ import {
 import { X, Plus, CheckCircle, AlertCircle } from 'lucide-react';
 import { submitTool } from '@/lib/tool-api';
 import { FileUpload } from '@/components/ui/file-upload';
+import { toast } from 'sonner';
 
 interface AddToolFormProps {
   prefilledData?: Record<string, unknown>;
@@ -123,12 +124,15 @@ export const AddToolForm = ({ prefilledData }: AddToolFormProps) => {
         setSubmitSuccess(true);
         form.reset();
         setLogoFile(null);
+        toast.success('Tool submitted successfully! It will be reviewed by our team.');
       } else {
         setSubmitError(result.error || 'Failed to submit tool. Please try again.');
+        toast.error(result.error || 'Failed to submit tool. Please try again.');
       }
     } catch (error) {
       console.error('Form submission error:', error);
       setSubmitError('Failed to submit tool. Please try again.');
+      toast.error('Failed to submit tool. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
