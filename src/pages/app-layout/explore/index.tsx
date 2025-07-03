@@ -4,6 +4,7 @@ import { InformationHeader } from '@/components/custom/information-header';
 import { ToolComparison } from '@/components/custom/tool-comparison';
 import { CategoryOverview } from '@/components/custom/category-overview';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -397,6 +398,59 @@ export const Explore = () => {
           }
         />
         <div className="space-y-4">
+          {/* Traditional Search */}
+          <div className="relative w-full">
+            {_searching ? (
+              <Loader2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none animate-spin" />
+            ) : (
+              <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            )}
+            <Input
+              type="text"
+              placeholder="Search tools by name, category, or feature..."
+              value={searchQuery}
+              onChange={(e) => {
+                const query = e.target.value;
+                setSearchQuery(query);
+                
+                // Clear search timeout
+                if (searchTimeoutRef.current) {
+                  clearTimeout(searchTimeoutRef.current);
+                }
+                
+                // Debounce search
+                searchTimeoutRef.current = setTimeout(() => {
+                  if (query.trim()) {
+                    performSearch(query);
+                  } else {
+                    // Show all tools when search is cleared
+                    setOnlineSearchResults(null);
+                    applyFilters(allTools, '', selectedCategory, selectedPricing);
+                  }
+                }, 300);
+              }}
+              className="pl-10 h-12"
+              disabled={loading}
+            />
+            {searchQuery && !_searching && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchQuery('');
+                  setOnlineSearchResults(null);
+                  applyFilters(allTools, '', selectedCategory, selectedPricing);
+                  if (searchTimeoutRef.current) {
+                    clearTimeout(searchTimeoutRef.current);
+                  }
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
           {/* AI-Powered Search */}
           <div className="w-full">
             <AISearchBar 
@@ -530,23 +584,49 @@ export const Explore = () => {
           className="text-sm"
           title={
             <span className="text-base font-medium text-foreground/60 leading-5">
-              {isFiltered
-                ? `Found ${totalCount} tools` 
-                : `${totalCount} approved tools`}
+              {searchQuery ? (
+                <span>
+                  Found {totalCount} tools for "{searchQuery}"
+                  {(selectedCategory !== 'all' || selectedPricing !== 'all') && (
+                    <span className="text-sm"> (filtered)</span>
+                  )}
+                </span>
+              ) : isFiltered ? (
+                `Found ${totalCount} tools` 
+              ) : (
+                `${totalCount} approved tools`
+              )}
             </span>
           }
           extra={
-            totalCount > 6 && !showAll && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-foreground/60 text-sm flex items-center gap-1"
-                onClick={() => setShowAll(true)}
-              >
-                View all {totalCount}
-                <ChevronRightIcon className="size-4" />
-              </Button>
-            )
+            <div className="flex items-center gap-2">
+              {searchQuery && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setOnlineSearchResults(null);
+                    applyFilters(allTools, '', selectedCategory, selectedPricing);
+                  }}
+                  className="text-xs"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Clear search
+                </Button>
+              )}
+              {totalCount > 6 && !showAll && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-foreground/60 text-sm flex items-center gap-1"
+                  onClick={() => setShowAll(true)}
+                >
+                  View all {totalCount}
+                  <ChevronRightIcon className="size-4" />
+                </Button>
+              )}
+            </div>
           }
         />
       )}
@@ -629,17 +709,37 @@ export const Explore = () => {
         <div className="space-y-4">
           {visibleTools.length === 0 ? (
             <div className="text-center py-12">
-              <span className="text-foreground/60">
-                {isFiltered
-                  ? 'No tools match your filters. Try adjusting your search criteria.'
-                  : 'No tools found. Be the first to add one!'}
-              </span>
-              <div className="mt-4">
-                <Link
-                  to="/add-tool"
-                  className="text-primary hover:text-primary/80 font-medium"
-                >
-                  Add a tool →
+              <SearchIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
+                {searchQuery ? `No results for "${searchQuery}"` : 'No tools found'}
+              </h3>
+              <p className="text-foreground/60 mb-6">
+                {searchQuery 
+                  ? 'Try adjusting your search terms or browse by category.'
+                  : isFiltered
+                    ? 'No tools match your current filters. Try adjusting your criteria.'
+                    : 'No tools found. Be the first to add one!'
+                }
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                {searchQuery && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSelectedCategory('all');
+                      setSelectedPricing('all');
+                      setOnlineSearchResults(null);
+                      applyFilters(allTools, '', 'all', 'all');
+                    }}
+                  >
+                    Clear all filters
+                  </Button>
+                )}
+                <Link to="/add-tool">
+                  <Button variant={searchQuery ? "default" : "outline"}>
+                    Add a tool
+                  </Button>
                 </Link>
               </div>
             </div>
