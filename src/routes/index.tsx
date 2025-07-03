@@ -54,8 +54,8 @@ export const Routes = () => {
           </AppLayout>
         }
       >
-        <Route path="/" element={<HomeAI />} />
-        <Route path="/chat" element={<Home />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/home-ai" element={<HomeAI />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/my-tools" element={<MyTools />} />
         <Route path="/saved" element={<Saved />} />
