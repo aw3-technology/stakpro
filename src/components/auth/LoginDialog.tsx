@@ -139,10 +139,12 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                     <FormLabel>Full Name</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <User className="absolute left-3 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
                         <Input
                           placeholder="John Doe"
                           className="pl-10"
+                          autoComplete="name"
+                          disabled={loading}
                           {...field}
                         />
                       </div>
@@ -159,11 +161,13 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                     <FormLabel>Email</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
                         <Input
                           type="email"
                           placeholder="john@example.com"
                           className="pl-10"
+                          autoComplete="email"
+                          disabled={loading}
                           {...field}
                         />
                       </div>
@@ -180,11 +184,13 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                     <FormLabel>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
                         <Input
                           type="password"
                           placeholder="••••••••"
                           className="pl-10"
+                          autoComplete="new-password"
+                          disabled={loading}
                           {...field}
                         />
                       </div>
@@ -210,11 +216,13 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                     <FormLabel>Email</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
                         <Input
                           type="email"
                           placeholder="john@example.com"
                           className="pl-10"
+                          autoComplete="email"
+                          disabled={loading}
                           {...field}
                         />
                       </div>
@@ -231,11 +239,13 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                     <FormLabel>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
                         <Input
                           type="password"
                           placeholder="••••••••"
                           className="pl-10"
+                          autoComplete="current-password"
+                          disabled={loading}
                           {...field}
                         />
                       </div>
