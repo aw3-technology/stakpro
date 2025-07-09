@@ -59,12 +59,19 @@ export const useAIAssistant = () => {
   const processUserMessage = useCallback(async (message: string, setMessages: React.Dispatch<React.SetStateAction<Message[]>>): Promise<Message[]> => {
     setIsProcessing(true);
     const messages: Message[] = [];
+    
+    console.log('processUserMessage called with:', message);
 
     try {
       // Analyze the user's intent
       const lowerMessage = message.toLowerCase();
+      console.log('Analyzing intent for:', lowerMessage);
       
-      if (lowerMessage.includes('recommend') || lowerMessage.includes('suggest') || lowerMessage.includes('need')) {
+      // Check for recommendation intent - prioritize this over search
+      if (lowerMessage.includes('recommend') || lowerMessage.includes('suggest') || lowerMessage.includes('need') || 
+          (lowerMessage.includes('best') && lowerMessage.includes('tool')) || 
+          lowerMessage.includes('for my project') || lowerMessage.includes('for a')) {
+        console.log('Matched recommendation intent');
         // Tool recommendation flow
         messages.push({
           id: Date.now(),
@@ -86,125 +93,61 @@ export const useAIAssistant = () => {
           ),
         });
 
-        // Get contextual analysis instead of basic recommendations
-        const contextualAnalysis = await perplexity.analyzeUserContext(message);
+        try {
+          console.log('Getting contextual analysis from Perplexity...');
+          // Get contextual analysis instead of basic recommendations
+          const contextualAnalysis = await perplexity.analyzeUserContext(message);
+          console.log('Contextual analysis received:', contextualAnalysis);
 
-        // Enhanced search using AI keywords
-        const searchKeywords = await perplexity.enhanceSearchQuery(message);
-        const searchPromises = searchKeywords.slice(0, 3).map(keyword => searchTools(keyword));
-        const searchResults = await Promise.allSettled(searchPromises);
-        
-        // Combine and deduplicate results
-        const foundTools = new Map<number, SoftwareToolModel & { id: number }>();
-        searchResults.forEach(result => {
-          if (result.status === 'fulfilled') {
-            result.value.slice(0, 3).forEach(tool => {
-              foundTools.set(tool.id, tool);
-            });
-          }
-        });
-
-        const relevantTools = Array.from(foundTools.values()).slice(0, 6);
-        
-        messages.push({
-          id: Date.now() + 1,
-          role: 'assistant',
-          content: (
-            <div className="flex flex-col gap-4">
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                <div dangerouslySetInnerHTML={{ __html: formatMarkdown(contextualAnalysis) }} />
-              </div>
-
-              {/* Show relevant tools from our database */}
-              {relevantTools.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Search className="h-4 w-4 text-blue-500" />
-                    <span className="font-medium text-sm">Tools in Our Database</span>
-                    <Badge variant="secondary" className="text-xs">
-                      {relevantTools.length} found
-                    </Badge>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {relevantTools.map(tool => createToolCard(tool))}
-                  </div>
+          // Skip database search for now - just show the AI response
+          console.log('Adding AI response message...');
+          messages.push({
+            id: Date.now() + 1,
+            role: 'assistant',
+            content: (
+              <div className="flex flex-col gap-4">
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <div dangerouslySetInnerHTML={{ __html: formatMarkdown(contextualAnalysis) }} />
                 </div>
-              )}
 
-              {/* Enhanced action buttons based on sophisticated discovery */}
-              <div className="flex flex-wrap gap-2 mt-2">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => {
-                    const event = new CustomEvent('ai-followup', { 
-                      detail: { message: 'Give me targeted recommendations based on my specific context' }
-                    });
-                    window.dispatchEvent(event);
-                  }}
-                >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Get Targeted Recommendations
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => {
-                    const event = new CustomEvent('ai-followup', { 
-                      detail: { message: 'Compare the trade-offs between these recommended tools' }
-                    });
-                    window.dispatchEvent(event);
-                  }}
-                >
-                  <Layers className="h-4 w-4 mr-2" />
-                  Compare Trade-offs
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => {
-                    const event = new CustomEvent('ai-followup', { 
-                      detail: { message: 'Analyze implementation complexity and timeline for these tools' }
-                    });
-                    window.dispatchEvent(event);
-                  }}
-                >
-                  Implementation Analysis
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => {
-                    const event = new CustomEvent('ai-followup', { 
-                      detail: { message: 'Calculate total cost of ownership for these tools' }
-                    });
-                    window.dispatchEvent(event);
-                  }}
-                >
-                  Cost Analysis
-                </Button>
-              </div>
-
-              {/* Browse and search options */}
-              <div className="flex flex-wrap gap-2 mt-2">
-                <Button size="sm" variant="ghost" onClick={() => window.location.href = '/explore'}>
-                  <Search className="h-4 w-4 mr-2" />
-                  Browse All Tools
-                </Button>
-                {searchKeywords.length > 0 && (
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    onClick={() => window.location.href = `/explore?search=${encodeURIComponent(searchKeywords[0])}`}
-                  >
-                    Search "{searchKeywords[0]}"
+                {/* Action buttons */}
+                <div className="flex flex-wrap gap-2 mt-4">
+                  <Button size="sm" variant="outline" onClick={() => window.location.href = '/explore'}>
+                    <Search className="h-4 w-4 mr-2" />
+                    Browse All Tools
                   </Button>
-                )}
+                  <Button size="sm" variant="outline" onClick={() => window.location.href = '/add-tool'}>
+                    Add a Tool
+                  </Button>
+                </div>
               </div>
-            </div>
-          ),
-        });
+            ),
+          });
+        } catch (error) {
+          console.error('Error in recommendation flow:', error);
+          // Remove the loading message
+          messages.pop();
+          
+          // Add error message
+          messages.push({
+            id: Date.now() + 1,
+            role: 'assistant',
+            content: (
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-red-600">
+                  I encountered an error while getting recommendations. This might be due to API configuration.
+                </p>
+                <p className="text-xs text-foreground/60">
+                  Error: {error instanceof Error ? error.message : 'Unknown error'}
+                </p>
+                <Button size="sm" variant="outline" onClick={() => window.location.href = '/explore'} className="mt-2">
+                  <Search className="h-4 w-4 mr-2" />
+                  Browse Tools Manually
+                </Button>
+              </div>
+            ),
+          });
+        }
       } else if (lowerMessage.includes('compare') || lowerMessage.includes('vs') || lowerMessage.includes('versus')) {
         // Tool comparison flow - try to find mentioned tools
         const toolNames = message.split(/\s+(?:vs|versus|and|,|\|)\s+/i);
@@ -485,6 +428,7 @@ export const useAIAssistant = () => {
           ),
         });
       } else if (lowerMessage.includes('find') || lowerMessage.includes('search') || lowerMessage.includes('show') || lowerMessage.includes('list')) {
+        console.log('Matched search intent');
         // Direct search functionality
         messages.push({
           id: Date.now(),
@@ -498,35 +442,40 @@ export const useAIAssistant = () => {
         });
 
         // Use AI to enhance the search query and search our database
-        const [enhancedQueries, directSearch] = await Promise.all([
-          perplexity.enhanceSearchQuery(message),
-          searchTools(message)
-        ]);
+        console.log('Searching tools with message:', message);
+        try {
+          const [enhancedQueries, directSearch] = await Promise.all([
+            perplexity.enhanceSearchQuery(message),
+            searchTools(message)
+          ]);
+          console.log('Enhanced queries:', enhancedQueries);
+          console.log('Direct search results:', directSearch);
 
-        // Combine search results
-        const allSearches = [directSearch];
-        if (enhancedQueries.length > 0) {
-          const enhancedSearches = await Promise.allSettled(
-            enhancedQueries.slice(0, 2).map(query => searchTools(query))
-          );
-          enhancedSearches.forEach(result => {
-            if (result.status === 'fulfilled') {
-              allSearches.push(result.value);
-            }
+          // Combine search results
+          const allSearches = [directSearch];
+          if (enhancedQueries.length > 0) {
+            const enhancedSearches = await Promise.allSettled(
+              enhancedQueries.slice(0, 2).map(query => searchTools(query))
+            );
+            enhancedSearches.forEach(result => {
+              if (result.status === 'fulfilled') {
+                allSearches.push(result.value);
+              }
+            });
+          }
+
+          // Deduplicate and limit results
+          const foundTools = new Map<number, SoftwareToolModel & { id: number }>();
+          allSearches.forEach(results => {
+            results.slice(0, 4).forEach(tool => {
+              foundTools.set(tool.id, tool);
+            });
           });
-        }
 
-        // Deduplicate and limit results
-        const foundTools = new Map<number, SoftwareToolModel & { id: number }>();
-        allSearches.forEach(results => {
-          results.slice(0, 4).forEach(tool => {
-            foundTools.set(tool.id, tool);
-          });
-        });
+          const searchResults = Array.from(foundTools.values()).slice(0, 8);
+          console.log('Final search results:', searchResults);
 
-        const searchResults = Array.from(foundTools.values()).slice(0, 8);
-
-        messages.push({
+          messages.push({
           id: Date.now() + 1,
           role: 'assistant',
           content: (
@@ -722,45 +671,101 @@ export const useAIAssistant = () => {
             </div>
           ),
         });
+        } catch (error) {
+          console.error('Error in search flow:', error);
+          messages.push({
+            id: Date.now() + 1,
+            role: 'assistant',
+            content: (
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-red-600">
+                  I encountered an error while searching. Please try again.
+                </p>
+                <p className="text-xs text-foreground/60">
+                  Error: {error instanceof Error ? error.message : 'Unknown error'}
+                </p>
+              </div>
+            ),
+          });
+        }
       } else {
-        // Default help message
+        // For general queries, first add a simple test response
+        console.log('Default case triggered for message:', message);
+        
+        // Simple test response to verify messages are working
         messages.push({
           id: Date.now(),
           role: 'assistant',
-          content: (
-            <div className="flex flex-col gap-4">
-              <p className="text-sm text-foreground/70">
-                I'm your AI-powered tool discovery assistant! Here's what I can help you with:
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <FeatureCard
-                  icon={<Sparkles className="h-5 w-5 text-purple-500" />}
-                  title="Get Recommendations"
-                  description="Tell me what you're building and I'll suggest the best tools"
-                  example="I need tools for building a React app"
-                />
-                <FeatureCard
-                  icon={<Search className="h-5 w-5 text-blue-500" />}
-                  title="Search Tools"
-                  description="Find specific tools in our database"
-                  example="Find code editors for Python"
-                />
-                <FeatureCard
-                  icon={<Layers className="h-5 w-5 text-blue-500" />}
-                  title="Compare Tools"
-                  description="Get detailed comparisons between different tools"
-                  example="Compare Figma vs Sketch"
-                />
-                <FeatureCard
-                  icon={<TrendingUp className="h-5 w-5 text-green-500" />}
-                  title="Discover Trends"
-                  description="Learn about the latest tools and industry trends"
-                  example="What are the latest DevOps trends?"
-                />
-              </div>
-            </div>
-          ),
+          content: `Echo test: You said "${message}". Now calling Perplexity API...`,
         });
+        
+        // Now try the Perplexity API
+        try {
+          // Get a general response from Perplexity
+          console.log('Calling Perplexity API...');
+          const response = await perplexity.getToolRecommendations(message);
+          
+          // Log the response for debugging
+          console.log('Perplexity response:', response);
+          
+          messages.push({
+            id: Date.now() + 1,
+            role: 'assistant',
+            content: (
+              <div className="flex flex-col gap-4">
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <div dangerouslySetInnerHTML={{ __html: formatMarkdown(response) }} />
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <Button size="sm" variant="outline" onClick={() => window.location.href = '/explore'}>
+                    <Search className="h-4 w-4 mr-2" />
+                    Browse All Tools
+                  </Button>
+                </div>
+              </div>
+            ),
+          });
+        } catch (error) {
+          console.error('Error calling Perplexity:', error);
+          // Fallback to help message if API fails
+          messages.push({
+            id: Date.now() + 1,
+            role: 'assistant',
+            content: (
+              <div className="flex flex-col gap-4">
+                <p className="text-sm text-foreground/70">
+                  I'm your AI-powered tool discovery assistant! Here's what I can help you with:
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <FeatureCard
+                    icon={<Sparkles className="h-5 w-5 text-purple-500" />}
+                    title="Get Recommendations"
+                    description="Tell me what you're building and I'll suggest the best tools"
+                    example="I need tools for building a React app"
+                  />
+                  <FeatureCard
+                    icon={<Search className="h-5 w-5 text-blue-500" />}
+                    title="Search Tools"
+                    description="Find specific tools in our database"
+                    example="Find code editors for Python"
+                  />
+                  <FeatureCard
+                    icon={<Layers className="h-5 w-5 text-blue-500" />}
+                    title="Compare Tools"
+                    description="Get detailed comparisons between different tools"
+                    example="Compare Figma vs Sketch"
+                  />
+                  <FeatureCard
+                    icon={<TrendingUp className="h-5 w-5 text-green-500" />}
+                    title="Discover Trends"
+                    description="Learn about the latest tools and industry trends"
+                    example="What are the latest DevOps trends?"
+                  />
+                </div>
+              </div>
+            ),
+          });
+        }
       }
     } catch (error) {
       console.error('AI Assistant error:', error);
@@ -782,6 +787,7 @@ export const useAIAssistant = () => {
       setIsProcessing(false);
     }
 
+    console.log('processUserMessage returning messages:', messages);
     return messages;
   }, []);
 

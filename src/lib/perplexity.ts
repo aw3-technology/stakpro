@@ -41,6 +41,7 @@ class PerplexityService {
     if (!apiKey) {
       console.warn('Perplexity API key not found in environment variables');
     }
+    console.log('Perplexity API key configured:', apiKey ? 'Yes' : 'No');
     this.apiKey = apiKey;
   }
 
