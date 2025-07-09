@@ -6,24 +6,17 @@ import { Message } from '@/components/custom/chat-container';
 const CHAT_STORAGE_KEY = 'stak-chat-history';
 
 export function ChatProvider({ children }: { children: ReactNode }) {
-  const [messages, setMessages] = useState<Message[]>(() => {
-    // Load messages from sessionStorage on initial load
-    try {
-      const stored = sessionStorage.getItem(CHAT_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+  // Temporarily disable sessionStorage to avoid JSX serialization issues
+  const [messages, setMessages] = useState<Message[]>([]);
 
-  // Save messages to sessionStorage whenever they change
+  // Clear any corrupted data from sessionStorage
   useEffect(() => {
     try {
-      sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
-    } catch (error) {
-      console.error('Failed to save chat history:', error);
+      sessionStorage.removeItem(CHAT_STORAGE_KEY);
+    } catch {
+      // Ignore errors
     }
-  }, [messages]);
+  }, []);
 
   const addMessage = (message: Message) => {
     setMessages((prevMessages) => [...prevMessages, message]);

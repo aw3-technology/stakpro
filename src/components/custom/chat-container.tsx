@@ -23,7 +23,8 @@ const renderJSXWithTypingEffect = (content: ReactNode, isVisible: boolean) => {
     return content;
   }
   
-  return content;
+  // For JSX elements, return them directly - they're already valid React nodes
+  return <>{content}</>;
 };
 
 const useAutoScroll = (
@@ -395,10 +396,7 @@ export const ChatContainer = ({ messages, containerRef }: ChatMessagesProps) => 
                       visibleJSX[assistantIndex] ? 'opacity-100' : 'opacity-0'
                     }`}
                   >
-                    {renderJSXWithTypingEffect(
-                      message.content,
-                      visibleJSX[assistantIndex]
-                    )}
+                    {visibleJSX[assistantIndex] ? message.content : null}
                     {!visibleJSX[assistantIndex] && (
                       <span className="animate-pulse">▋</span>
                     )}

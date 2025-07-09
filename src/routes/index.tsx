@@ -6,6 +6,7 @@ import { SignUp } from '@/pages/auth-layout/sign-up';
 import { PasswordReset } from '@/pages/auth-layout/password-reset';
 import { Route, Routes as ReactRoutes, Outlet } from 'react-router';
 import { Home } from '@/pages/app-layout/home';
+import { ErrorBoundary } from '@/pages/app-layout/home/components/ErrorBoundary';
 import { HomeAI } from '@/pages/app-layout/home-ai';
 import { ChatProvider } from '@/providers/chat-provider';
 import { Explore } from '@/pages/app-layout/explore';
@@ -54,7 +55,7 @@ export const Routes = () => {
           </AppLayout>
         }
       >
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<ErrorBoundary><Home /></ErrorBoundary>} />
         <Route path="/home-ai" element={<HomeAI />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/my-tools" element={<MyTools />} />

@@ -89,7 +89,7 @@ export const PromptInputArea = ({
 
   return (
     <div className={cn("flex flex-col gap-4 w-full", className)}>
-      <div className="w-full rounded-xl bg-card relative overflow-hidden">
+      <div className="w-full rounded-xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm relative overflow-hidden">
         <div className="relative rounded-xl">
           <ShineBorder duration={4} style={{opacity: 0.8}} shineColor={["#A07CFE", "#FE8FB5", "#FFBE7B"]} />
           <Textarea
