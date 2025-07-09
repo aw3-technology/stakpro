@@ -22,6 +22,7 @@ const signUpSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   fullName: z.string().min(2, 'Full name must be at least 2 characters').optional(),
+  company: z.string().optional(),
 });
 
 export const SignUpForm = () => {
@@ -30,12 +31,15 @@ export const SignUpForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
 
+
+
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       email: '',
       password: '',
       fullName: '',
+      company: '',
     },
   });
 
@@ -68,11 +72,13 @@ export const SignUpForm = () => {
             <FormItem>
               <FormLabel>Full Name</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Enter your full name"
-                  {...field}
-                  disabled={isLoading}
-                />
+                <div className="relative">
+                  <Input
+                    placeholder="Enter your full name"
+                    {...field}
+                    disabled={isLoading}
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -85,17 +91,47 @@ export const SignUpForm = () => {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Enter your email address"
-                  type="email"
-                  {...field}
-                  disabled={isLoading}
-                />
+                <div className="relative">
+                  <Input
+                    placeholder="Enter your email address"
+                    type="email"
+                    {...field}
+                    disabled={isLoading}
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="company"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Company (Test)</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Input
+                    placeholder="Enter your company name"
+                    {...field}
+                    disabled={isLoading}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        {/* Test field to make sure rendering works */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Test Field (Should be visible)</label>
+          <input
+            type="text"
+            placeholder="This should definitely show up"
+            className="flex h-9 w-full rounded-md border border-neutral-200 bg-card px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-primary focus-visible:ring-primary/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+          />
+        </div>
         <FormField
           control={form.control}
           name="password"

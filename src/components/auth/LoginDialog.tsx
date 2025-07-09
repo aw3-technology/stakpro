@@ -98,8 +98,12 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     setIsSignUp(!isSignUp);
     setError(null);
     setSuccessMessage(null);
-    loginForm.reset();
-    signupForm.reset();
+    setLoading(false);
+    // Reset forms with a slight delay to ensure proper cleanup
+    setTimeout(() => {
+      loginForm.reset();
+      signupForm.reset();
+    }, 0);
   };
 
   return (
@@ -130,7 +134,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
 
         {isSignUp ? (
           <Form {...signupForm}>
-            <form onSubmit={signupForm.handleSubmit(handleSignUp)} className="space-y-4">
+            <form key="signup-form" onSubmit={signupForm.handleSubmit(handleSignUp)} className="space-y-4">
               <FormField
                 control={signupForm.control}
                 name="fullName"

@@ -76,7 +76,7 @@ class PerplexityService {
 
     try {
       const response = await this.makeRequest('/chat/completions', {
-        model: 'llama-3.1-sonar-small-128k-online', // Using online model for up-to-date tool information
+        model: 'sonar-pro', // Using Sonar Pro model
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -114,7 +114,7 @@ Please provide:
 
     try {
       const response = await this.makeRequest('/chat/completions', {
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'sonar-pro',
         messages: [
           { role: 'user', content: prompt }
         ],
@@ -145,7 +145,7 @@ Please provide:
 
     try {
       const response = await this.makeRequest('/chat/completions', {
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'llama-3-sonar-small-32k',
         messages: [
           { role: 'user', content: prompt }
         ],
@@ -180,7 +180,7 @@ For each tool, briefly explain why it's included and how it fits the requirement
 
     try {
       const response = await this.makeRequest('/chat/completions', {
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'sonar-pro',
         messages: [
           { role: 'user', content: prompt }
         ],
@@ -209,7 +209,7 @@ Return only a comma-separated list of search terms.`;
 
     try {
       const response = await this.makeRequest('/chat/completions', {
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'sonar-pro',
         messages: [
           { role: 'user', content: prompt }
         ],
@@ -241,7 +241,7 @@ Keep it concise and practical for developers.`;
 
     try {
       const response = await this.makeRequest('/chat/completions', {
-        model: 'llama-3.1-sonar-small-128k-online', // Online model for latest information
+        model: 'sonar-pro', // Using Sonar Pro model
         messages: [
           { role: 'user', content: prompt }
         ],
@@ -289,7 +289,7 @@ Please search the web and return information about relevant software tools in th
 
     try {
       const response = await this.makeRequest('/chat/completions', {
-        model: 'llama-3.1-sonar-small-128k-online', // Using online model for web search
+        model: 'sonar-pro', // Using Sonar Pro model
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -352,7 +352,7 @@ Keep it concise but insightful - aim for the depth of an experienced consultant'
 
     try {
       const response = await this.makeRequest('/chat/completions', {
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'sonar-pro',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -388,7 +388,7 @@ Provide practical implementation guidance covering timeline, complexity, and suc
 
     try {
       const response = await this.makeRequest('/chat/completions', {
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'sonar-pro',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -425,7 +425,7 @@ Provide a realistic TCO analysis with both costs and potential ROI.`;
 
     try {
       const response = await this.makeRequest('/chat/completions', {
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'sonar-pro',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }

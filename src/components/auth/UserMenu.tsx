@@ -42,10 +42,11 @@ export function UserMenu() {
       <>
         <Button 
           variant="outline" 
-          size="sm"
+          size="icon"
+          className="h-10 w-10 rounded-full bg-white/80 backdrop-blur-sm border-white/20 hover:bg-white/90"
           onClick={() => setShowLoginDialog(true)}
         >
-          Sign In
+          <User className="h-5 w-5" />
         </Button>
         <LoginDialog 
           open={showLoginDialog} 

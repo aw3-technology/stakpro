@@ -285,7 +285,7 @@ export class AISearchEngine {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'sonar-small-online',
         messages: [
           {
             role: 'system',

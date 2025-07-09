@@ -10,7 +10,13 @@ import {
 import { useAIAssistant } from './hooks/use-ai-assistant';
 import { TextAnimate } from "@/components/magicui/text-animate";  
 import { BlurFade } from "@/components/magicui/blur-fade";
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export const Home = () => {
   const { messages, addMessage, setMessages, clearMessages } = useChat();
@@ -27,7 +33,6 @@ export const Home = () => {
     window.addEventListener('ai-followup', handleFollowUp as EventListener);
 
     return () => {
-      clearMessages();
       window.removeEventListener('ai-followup', handleFollowUp as EventListener);
     };
   }, []);
@@ -90,10 +95,27 @@ export const Home = () => {
       {messages?.length > 0 && (
         <div
           ref={containerRef}
-          className="w-full h-full overflow-y-auto flex justify-center"
+          className="w-full h-full overflow-y-auto flex justify-center relative"
         >
           <div className="max-w-[752px] w-full px-4">
             <ChatContainer messages={messages} containerRef={containerRef} />
+          </div>
+          <div className="absolute top-4 right-4">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={clearMessages}
+                  className="h-8 w-8"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Clear chat history</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       )}

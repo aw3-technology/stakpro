@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Link2, AlertCircle, CheckCircle, Edit3 } from 'lucide-react';
+import { Loader2, Link2, AlertCircle, AlertTriangle, CheckCircle, Edit3 } from 'lucide-react';
 import { scrapeToolData, analyzeUrlOnly } from '@/lib/url-scraper';
 import { submitTool } from '@/lib/tool-api';
 
@@ -74,10 +74,25 @@ export default function QuickAddForm({ onSuccess, onFallbackToManual }: QuickAdd
           originalUrl: values.url,
           isFallback: true
         });
+        
+        // Show warning about limited data
+        setScrapeError('Limited data extracted due to website restrictions. You can edit the information manually.');
       }
     } catch (error) {
       console.error('Scraping error:', error);
-      setScrapeError('Unable to extract data from this URL. Please try manual entry.');
+      
+      // Provide more specific error messages
+      let errorMessage = 'Unable to extract data from this URL. ';
+      if (error instanceof Error) {
+        if (error.message.includes('All proxy services failed')) {
+          errorMessage += 'The website may be blocking automated access. ';
+        } else if (error.message.includes('Failed to fetch')) {
+          errorMessage += 'Network error occurred. ';
+        }
+      }
+      errorMessage += 'Please try manual entry or check the URL.';
+      
+      setScrapeError(errorMessage);
       
       // Still provide basic fallback data
       try {
@@ -90,6 +105,7 @@ export default function QuickAddForm({ onSuccess, onFallbackToManual }: QuickAdd
         });
       } catch (fallbackError) {
         console.error('Fallback analysis failed:', fallbackError);
+        setScrapeError('Unable to analyze URL. Please enter tool information manually.');
       }
     } finally {
       setIsScrapingUrl(false);
@@ -217,13 +233,26 @@ export default function QuickAddForm({ onSuccess, onFallbackToManual }: QuickAdd
 
       {/* Error Display */}
       {scrapeError && (
-        <Card className="border-orange-200 bg-orange-50">
+        <Card className={`${scrapeError.includes('Limited data') ? 'border-yellow-200 bg-yellow-50' : 'border-orange-200 bg-orange-50'}`}>
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
+              {scrapeError.includes('Limited data') ? (
+                <AlertTriangle className="h-5 w-5 text-yellow-500 shrink-0 mt-0.5" />
+              ) : (
+                <AlertCircle className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
+              )}
               <div>
-                <p className="text-orange-800 font-medium">Extraction Issue</p>
-                <p className="text-orange-700 text-sm">{scrapeError}</p>
+                <p className={`font-medium ${scrapeError.includes('Limited data') ? 'text-yellow-800' : 'text-orange-800'}`}>
+                  {scrapeError.includes('Limited data') ? 'Limited Data Extracted' : 'Extraction Issue'}
+                </p>
+                <p className={`text-sm ${scrapeError.includes('Limited data') ? 'text-yellow-700' : 'text-orange-700'}`}>
+                  {scrapeError}
+                </p>
+                {scrapeError.includes('Limited data') && (
+                  <p className="text-yellow-600 text-xs mt-1">
+                    You can still edit the information manually or proceed with the basic data.
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>

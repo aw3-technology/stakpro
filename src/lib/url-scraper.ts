@@ -46,21 +46,76 @@ const pricingKeywords = {
   paid: ['paid', 'subscription', 'premium only', 'enterprise', 'starting at']
 };
 
+// Multiple proxy services for better reliability
+const proxyServices = [
+  {
+    name: 'allorigins',
+    url: (targetUrl: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
+    extractContent: (data: any) => data.contents
+  },
+  {
+    name: 'cors-anywhere',
+    url: (targetUrl: string) => `https://cors-anywhere.herokuapp.com/${targetUrl}`,
+    extractContent: (data: any) => data
+  },
+  {
+    name: 'thingproxy',
+    url: (targetUrl: string) => `https://thingproxy.freeboard.io/fetch/${targetUrl}`,
+    extractContent: (data: any) => data
+  }
+];
+
+// Try multiple proxy services with timeout
+async function fetchWithProxy(url: string, timeout = 10000): Promise<string | null> {
+  for (const proxy of proxyServices) {
+    try {
+      console.log(`Trying proxy: ${proxy.name}`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      
+      const response = await fetch(proxy.url(url), {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        console.warn(`Proxy ${proxy.name} failed with status: ${response.status}`);
+        continue;
+      }
+      
+      const data = await response.text();
+      const html = proxy.extractContent(data);
+      
+      if (html && html.length > 100) { // Basic validation that we got HTML content
+        console.log(`Successfully fetched with ${proxy.name}`);
+        return html;
+      }
+      
+    } catch (error) {
+      console.warn(`Proxy ${proxy.name} failed:`, error);
+      continue;
+    }
+  }
+  
+  return null;
+}
+
 export const scrapeToolData = async (url: string): Promise<ScrapeResult> => {
   try {
     // Validate URL
     new URL(url);
     
-    // Use a free web scraping service or proxy to avoid CORS
-    const scrapeUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    // Try to fetch with multiple proxy services
+    const html = await fetchWithProxy(url);
     
-    const response = await fetch(scrapeUrl);
-    if (!response.ok) {
-      throw new Error('Failed to fetch website');
+    if (!html) {
+      throw new Error('All proxy services failed');
     }
-    
-    const data = await response.json();
-    const html = data.contents;
     
     // Parse HTML using DOMParser
     const parser = new DOMParser();
@@ -115,27 +170,66 @@ export const analyzeUrlOnly = (url: string): ScrapedData => {
   const domainParts = domain.split('.');
   const name = domainParts[0];
   
-  // Capitalize first letter
-  const title = name.charAt(0).toUpperCase() + name.slice(1);
+  // Capitalize first letter and handle common patterns
+  let title = name.charAt(0).toUpperCase() + name.slice(1);
   
-  // Basic category detection from domain
+  // Handle common naming patterns
+  if (name.includes('-')) {
+    title = name.split('-').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  } else if (name.includes('.')) {
+    title = name.split('.').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  }
+  
+  // Enhanced category detection from domain
   let category = 'Other';
   const lowerDomain = domain.toLowerCase();
+  const pathname = new URL(url).pathname.toLowerCase();
+  const fullText = `${lowerDomain} ${pathname}`;
   
   for (const [cat, keywords] of Object.entries(categoryKeywords)) {
-    if (keywords.some(keyword => lowerDomain.includes(keyword.toLowerCase()))) {
+    if (keywords.some(keyword => fullText.includes(keyword.toLowerCase()))) {
       category = cat;
       break;
     }
   }
   
+  // Generate better description based on domain
+  let description = `Software tool from ${domain}`;
+  if (category !== 'Other') {
+    description = `${title} - A ${category.toLowerCase()} tool`;
+  }
+  
+  // Generate basic features based on category
+  const features: string[] = [];
+  if (category === 'Code Editor') {
+    features.push('Code editing', 'Syntax highlighting', 'File management');
+  } else if (category === 'Design Tool') {
+    features.push('Design creation', 'Prototyping', 'Collaboration');
+  } else if (category === 'DevOps') {
+    features.push('Deployment automation', 'CI/CD pipelines', 'Infrastructure management');
+  } else if (category === 'Database') {
+    features.push('Data storage', 'Query management', 'Database administration');
+  } else {
+    features.push('Core functionality', 'User interface', 'Performance optimization');
+  }
+  
+  // Generate relevant tags
+  const tags = [name.toLowerCase(), domain.split('.')[0]];
+  if (category !== 'Other') {
+    tags.push(category.toLowerCase().replace(' ', '-'));
+  }
+  
   return {
     title,
-    description: `Software tool from ${domain}`,
+    description,
     category,
     pricing: { type: 'freemium' }, // Default assumption
-    tags: [name, domain.split('.')[0]],
-    features: []
+    tags,
+    features
   };
 };
 

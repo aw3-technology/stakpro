@@ -7,6 +7,7 @@ import {
   Plus,
   Folder,
   Command,
+  Map,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -48,6 +49,23 @@ export const Navbar: React.FC = () => {
           >
             <Search className="w-5 h-5 text-blue-500" />
           </Link>
+
+          {/* Implementation Journey */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                to="/tool-journey"
+                className={`hover:bg-card active:bg-card transition-colors rounded-full p-3 ${isActive(
+                  '/tool-journey'
+                )}`}
+              >
+                <Map className="w-5 h-5 text-green-500" />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Implementation Journey</p>
+            </TooltipContent>
+          </Tooltip>
 
           {/* Command Palette Trigger */}
           <Tooltip>

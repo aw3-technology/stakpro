@@ -1,0 +1,45 @@
+# Page snapshot
+
+```yaml
+- main:
+  - paragraph: Black Friday Sale!
+  - paragraph: It kicks off today and is available for just 24 hours—don‘t miss out!
+  - text: 09 h 45 m 18 s
+  - button "Get Started"
+  - button "Close banner"
+  - paragraph: Loading test message
+  - paragraph: "I'm your AI-powered tool discovery assistant! Here's what I can help you with:"
+  - text: Get Recommendations
+  - paragraph: Tell me what you're building and I'll suggest the best tools
+  - paragraph: "\"I need tools for building a React app\""
+  - text: Search Tools
+  - paragraph: Find specific tools in our database
+  - paragraph: "\"Find code editors for Python\""
+  - text: Compare Tools
+  - paragraph: Get detailed comparisons between different tools
+  - paragraph: "\"Compare Figma vs Sketch\""
+  - text: Discover Trends
+  - paragraph: Learn about the latest tools and industry trends
+  - paragraph: "\"What are the latest DevOps trends?\""
+  - button
+  - textbox "Enter your prompt"
+  - button
+- navigation:
+  - link "Home":
+    - /url: /
+    - img "Home"
+  - link:
+    - /url: /explore
+  - button
+  - link:
+    - /url: /my-tools
+  - link "Saved":
+    - /url: /saved
+    - img "Saved"
+  - link:
+    - /url: /add-tool
+  - button "Sign In"
+- heading "Command Palette" [level=2]
+- paragraph: Search for a command to run...
+- region "Notifications alt+T"
+```
